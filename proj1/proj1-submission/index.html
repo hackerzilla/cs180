@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+<style>
+	table,
+	th,
+	td {
+		border: 1px solid black
+	}
+
+	img {
+		width: 95%;
+	}
+</style>
+
+<head>
+	<meta charset="utf-8">
+	<title>CS180 Project 1</title>
+</head>
+
+<body>
+	<h1>
+		CS 180 Project 1: Images of the Russian Empire: Colorizing the Prokudin-Gorskii photo collection.
+	</h1>
+	<h2>
+		By Julian Pearson Rickenbach, SID: 3038210307
+	</h2>
+	<p>
+
+		The result of your algorithm on all of our example images. List the offsets you calculated. Do not turn in the
+		large .tiff images. Your web page should only display compressed images (e.g. jpg or png or gif if you want to
+		animate something).
+
+		The result of your algorithm on a few examples of your own choosing, downloaded from the Prokudin-Gorskii
+		collection.
+
+		If your algorithm failed to align any image, provide a brief explanation of why.
+
+		Remember not to use any absolute links to images etc on your computer, as these will not work online. Only use
+		relative links within your folder.
+	</p>
+	<h3>
+		Overview
+	</h3>
+	<p>
+		My approach was relatively straightforward, although I learned a massive amount from this project and I would do
+		it differently if I were to do it again.
+
+		I first familiarized myself with the basics by learning how to read in and display images, followed by cropping,
+		compositing and saving images.
+
+		It took me longer than I would like to admit to figure out how to translate images in the compositing process
+		without getting indexing errors relating to going out of bounds.
+
+		Even to this day my code has bugs in regards to out of bounds indices, if the gaussian tree depth is too great
+		(I keep it to around 1/8 scale).
+	</p>
+	<p>
+		After achieving translation and compositing, I tackled the alignment search. My approach was overly
+		straightforward. At first I made a lot of mistakes related to black values of pixels on the outside of the image
+		which skewed the Sum of Squared Differences scores. I resorted to implementing Normalized Cross Correlation,
+		which was much easier and more effective than SSD. Eventually, I also realized that cropping the second image
+		(the green or red one) before running NCC solved many of my issues, and suddenly my allignment algorithm worked
+		flawlessly--at least for .jpg images. It was far too slow for .tif pictures because they required a much broader
+		search range which exponentially incrased the work required for alignment search.
+	</p>
+	<p>
+		Next up was attempting to solve the complexity issues with a gaussian pyramid for alignment search. This was
+		much trickier than expected. Currently I have the pyramid working, although it is not as fast as I would have
+		hoped for, and there are the indexing bugs I mentioned earlier related to the array bounds becoming too small to
+		search. The hardest part of this project was in understanding the concepts behind what I was supposed to
+		implement, and then also debugging my code, especially as it related to the indexing issues. Wrapping my head
+		around one image being "slid" across another image, and thinking about when it goes "off the edge" was very
+		difficult.
+	</p>
+
+	<p>
+		In the end, my gaussian pyramid worked after many rehashed attempts at the algorithm. I found that the simplest
+		approach worked best and I didn't need that many levels of recursion.
+	</p>
+
+	<h3>
+		Difficult Images
+	</h3>
+	<p>
+		I had a hard time getting 'emir', 'melons' and 'self_portrait' to align well. Especially emir. I believe the
+		cause is that there is not much overlap between bright portions of the red/green/blue color channels in these
+		photos. In other words, they have a lot of one color in large swathes, like emir's bright blue clothes, and the
+		very green melons. Overall, I'm still happy with what I achieved, given how much I struggled with this project,
+		but I could have improved these three images if I had time to implement a more sophisticated pattern recognition
+		method.
+	</p>
+	<h3>
+		Results
+	</h3>
+	<p>
+	<h4>Offsets</h4>
+	<table>
+		<tr>
+			<th>Image Name</th>
+			<th>Green Offset</th>
+			<th>Red Offset</th>
+		</tr>
+		<tr>
+			<td>cathedral.jpg</td>
+			<td>(5, 2)</td>
+			<td>(12, 3)</td>
+		</tr>
+		<tr>
+			<td>icon.tif</td>
+			<td>(41, 17)</td>
+			<td>(89, 23)</td>
+		</tr>
+		<tr>
+			<td>self_portrait.tif</td>
+			<td>(81, 29)</td>
+			<td>(165, 33)</td>
+		</tr>
+		<tr>
+			<td>church.tif</td>
+			<td>(25, 3)</td>
+			<td>(58, -5)</td>
+		</tr>
+		<tr>
+			<td>lady.tif</td>
+			<td>(56, 8)</td>
+			<td>(111, 11)</td>
+		</tr>
+		<tr>
+			<td>three_generations.tif</td>
+			<td>(55, 13)</td>
+			<td>(112, 10)</td>
+		</tr>
+		<tr>
+			<td>melons.tif</td>
+			<td>(85, 10)</td>
+			<td>(165, 9)</td>
+		</tr>
+		<tr>
+			<td>tobolsk.jpg</td>
+			<td>(3, 3)</td>
+			<td>(6, 3)</td>
+		</tr>
+		<tr>
+			<td>monastery.jpg</td>
+			<td>(-3, 2)</td>
+			<td>(3, 2)</td>
+		</tr>
+		<tr>
+			<td>train.tif</td>
+			<td>(44, 6)</td>
+			<td>(89, 32)</td>
+		</tr>
+		<tr>
+			<td>emir.tif</td>
+			<td>(49, 24)</td>
+			<td>(88, 43)</td>
+		</tr>
+		<tr>
+			<td>onion_church.tif</td>
+			<td>(52, 26)</td>
+			<td>(108, 36)</td>
+		</tr>
+		<tr>
+			<td>harvesters.tif</td>
+			<td>(61, 17)</td>
+			<td>(125, 13)</td>
+		</tr>
+		<tr>
+			<td>sculpture.tif</td>
+			<td>(33, -11)</td>
+			<td>(140, -27)</td>
+		</tr>
+
+	</table>
+
+	<h4>
+		Images
+	</h4>
+	<img align="middle" src="images/cathedral.jpg" alt="cathedral">
+	<img align="middle" src="images/icon.jpg" alt="icon">
+	<img align="middle" src="images/self_portrait.jpg" alt="self_portrait">
+	<img align="middle" src="images/church.jpg" alt="church">
+	<img align="middle" src="images/lady.jpg" alt="lady">
+	<img align="middle" src="images/three_generations.jpg" alt="three_generations">
+	<img align="middle" src="images/melons.jpg" alt="melons">
+	<img align="middle" src="images/tobolsk.jpg" alt="tobolsk">
+	<img align="middle" src="images/monastery.jpg" alt="monastery">
+	<img align="middle" src="images/train.jpg" alt="train">
+	<img align="middle" src="images/emir.jpg" alt="emir">
+	<img align="middle" src="images/onion_church.jpg" alt="onion_church">
+	<img align="middle" src="images/harvesters.jpg" alt="harvesters">
+	<img align="middle" src="images/sculpture.jpg" alt="sculpture">
+	</p>
+</body>
+
+</html>
