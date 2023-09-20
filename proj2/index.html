@@ -1,12 +1,114 @@
 <!DOCTYPE html>
 <html>
-<style>
-
-</style>
-<head>
-
-</head>
+    <style>
+        table,
+        th,
+        td {
+            border: 1px solid black
+        }
+        img {
+            max-width: 50%;
+            max-height: 50%;
+        } 
+    </style>
+    
+    <head>
+        <meta charset="utf-8">
+        <title>CS180 Project 1</title>
+    </head>
 <body>
+    <h1>
+        CS 180 Project 2: Fun with Filters and Frequencies!
+    </h1>
+    <h2>
+        By Julian Pearson Rickenbach, SID: 3038210307
+    </h2>
+    <h2>
+        Part 1: Fun with Filters
+    </h2>
+    <h3>
+        Part 1.1: Finite Difference Operator
+    </h3>
+    <p>
+        Finding the derivative images of the cameraman image was as straightforward as convolving the image with the numpy arrays [[-1 1]] and [[1] [-1]]. The magnitude image was easy to derive after that:
+    </p>
+    <img align="middle" src="images/cameraman_dx.jpg" alt="cameraman_dx">
+    <img align="middle" src="images/cameraman_dy.jpg" alt="cameraman_dy">
+    <img align="middle" src="images/cameraman_gradient.jpg" alt="cameraman_gradient">
+    <img align="middle" src="images/cameraman_gradient_binarized.jpg" alt="cameraman_gradient">
+    <p>
+        The results are pretty noisy.
+    </p>
+    <h3>
+        Part 1.2: Derivative of Gaussian Filter 
+    </h3>
+    <p>
+        By filtering the image with a Gaussian first, we get much less noisy results and clearer lines (depending on the threshold and blur amount).
+    </p>
+    <img align="middle" src="images/cameraman_blurred_gradient.jpg" alt="cameraman_gradient">
+    <p>
+        And we can confirm that the Derivative Theorem of Convolution works:
+    </p>
+    <img align="middle" src="images/cameraman_blurred_gradient_convolution.jpg" alt="cameraman">
+    <h2>
+        Part 2: Fun with Frequencies
+    </h2>
+    <h3>
+        Part 2.1: Image "Sharpening"
+    </h3>
+    <p>
+        This part was a bit more challenging for me. I had to learn some new (to me) Python syntax and I had a persistent bug with the single convolution method due to the unit impulse being the origin and not in the center of the kernel.
+        
+        But, overall, sharpening was fun! Here's my results on the given image and some of my choosing:
+    </p>
+    <img align="middle" src="images/taj.jpg" alt="taj">
+    <img align="middle" src="images/taj_sharp.jpg" alt="taj_sharp">
+    <br> 
+    <img align="middle" src="images/bigfoot.jpg" alt="bigfoot">
+    <img align="middle" src="images/bigfoot_sharp.jpg" alt="bigfoot_sharp">
+    <br> 
+    <img align="middle" src="images/hana.jpg" alt="hana">
+    <img align="middle" src="images/hana_sharp.jpg" alt="hana">
+    <br> 
+    <img align="middle" src="images/triomphe.jpg" alt="triomphe">
+    <img align="middle" src="images/triomphe_sharp.jpg" alt="triomphe">
+    <br> 
+    <img align="middle" src="images/miss_sr.jpg" alt="miss_sr">
+    <img align="middle" src="images/miss_sr_sharp.jpg" alt="miss_sr">
+    <p>
+        And here is my test of bluring, then resharpening. What I noticed here is that we lose data when we blur, and it cannot be totally retrieved by our sharpening technique. In other words, it's a lossy operation.
+    </p>
+    <img align="middle" src="images/apollo.jpg" alt="apollo">
+    <img align="middle" src="images/apollo_blurred.jpg" alt="apollo">
+    <img align="middle" src="images/apollo_resharpened.jpg" alt="apollo">
 
+    <h2>
+        Part 2.2: Hybrid Images
+    </h2>
+    <img align="middle" src="images/derek.jpg" alt="hybrid">
+    <img align="middle" src="images/nutmeg.jpg" alt="hybrid">
+    <img align="middle" src="images/dermeg.jpg" alt="hybrid">
+    <br>
+    <img align="middle" src="images/gandalf.jpg" alt="hybrid">
+    <img align="middle" src="images/lincoln.jpg" alt="hybrid">
+    <img align="middle" src="images/gandoln.jpg" alt="hybrid">
+    <br>
+    <img align="middle" src="images/dog.jpg" alt="hybrid">
+    <img align="middle" src="images/horse.jpg" alt="hybrid">
+    <img align="middle" src="images/dog_horse.jpg" alt="hybrid"> 
+
+    <h2>
+        Part 2.3 and 2.4: Laplacian Stacks and Splicing
+    </h2>
+    <img align="middle" src="images/apple_stack.jpg" alt="stack"> 
+    <img align="middle" src="images/orange_stack.jpg" alt="stack"> 
+    <br>
+    <img align="middle" src="images/oraple.jpg" alt="stack"> 
+    <br>
+    <img align="middle" src="images/towers.jpg" alt="stack"> 
+    <img align="middle" src="images/sather_dur.jpg" alt="stack"> 
+    <br>
+    <img align="middle" src="images/skies.jpg" alt="stack"> 
+    <img align="middle" src="images/galaxy_sky.jpg" alt="stack"> 
 </body>
 </html>
