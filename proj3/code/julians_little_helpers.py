@@ -3,6 +3,7 @@ import numpy as np
 import cv2
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
+import json
 
 def read_im(filepath):
     if filepath[len(filepath)-3:] == 'tif':
@@ -12,10 +13,10 @@ def read_im(filepath):
     else:
         return mpimg.imread(filepath)
 
-def Display2Images(im1, im2, name1, name2):
+def Display2Images(im1, im2, name1, name2, size):
     # Set the desired width and height for the figure
-    fig_width = 12  # Width in inches
-    fig_height = 6  # Height in inches
+    fig_width = 2*size # Width in inches
+    fig_height = size  # Height in inches
 
     # Create a figure with two subplots and set the figsize
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(fig_width, fig_height))
@@ -28,8 +29,27 @@ def Display2Images(im1, im2, name1, name2):
     ax2.imshow(im2)
     ax2.set_title(name2)
 
-    # Adjust spacing between subplots (optional)
+    # Adjust spacing between subplots 
     plt.tight_layout()
 
     # Show the figure
     plt.show()
+
+def GetPointsFromJSON(json_file_path):
+    try:
+        # Read the JSON file
+        with open(json_file_path, 'r') as file:
+            data = json.load(file)
+
+        # Extract the points from the JSON data
+        im1_points = data.get('im1Points', [])
+        im2_points = data.get('im2Points', [])
+
+        return im1_points, im2_points
+    except FileNotFoundError:
+        print(f"The file '{json_file_path}' was not found.")
+        return [], []
+
+def GetDelauynayFromPts(pts):
+    # TODO: Implement this
+    pass
