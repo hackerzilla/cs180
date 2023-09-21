@@ -1,8 +1,10 @@
 # Julian's helpers functions for project 3
 import numpy as np
 import cv2
+from scipy.spatial import Delaunay
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
+import matplotlib.tri as mtri
 import json
 
 def read_im(filepath):
@@ -50,6 +52,33 @@ def GetPointsFromJSON(json_file_path):
         print(f"The file '{json_file_path}' was not found.")
         return [], []
 
-def GetDelauynayFromPts(pts):
-    # TODO: Implement this
-    pass
+def GetTriangulationObject(pts):
+    """
+    Returns a maplotlib triangulation object. 
+    Assumes pts is a NumPy array.
+    """
+    tris = Delaunay(pts).simplices
+    triangulation = mtri.Triangulation(pts[:, 0], pts[:, 1], tris) 
+    return triangulation
+
+def DisplayFaceTrisAndPts(face_im, tris, pts):
+    """
+    Assumes tris is a matplotlib triangulation object.
+    Assumes pts is a NumPy array.
+    """
+
+    fig, ax = plt.subplots(figsize=(8, 6))
+    ax.imshow(face_im)
+
+    ax.triplot(tris, 'go--', alpha=0.5)
+
+    # Plot the original points
+    ax.plot(pts[:, 0], pts[:, 1], 'ro')
+
+    # Add labels and title
+    ax.set_xlabel('X-Axis')
+    ax.set_ylabel('Y-Axis')
+    ax.set_title('Triangles and Points Overlay')
+
+    # Show the plot
+    plt.show()
