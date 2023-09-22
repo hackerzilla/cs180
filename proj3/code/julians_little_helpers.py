@@ -61,10 +61,11 @@ def GetTriangulationObject(pts):
     triangulation = mtri.Triangulation(pts[:, 0], pts[:, 1], tris) 
     return triangulation
 
-def DisplayFaceTrisAndPts(face_im, tris, pts):
+def DisplayFaceTrisAndPts(face_im, tris, pts, title):
     """
     Assumes tris is a matplotlib triangulation object.
     Assumes pts is a NumPy array.
+    Assumes title is a string.
     """
 
     fig, ax = plt.subplots(figsize=(8, 6))
@@ -78,7 +79,36 @@ def DisplayFaceTrisAndPts(face_im, tris, pts):
     # Add labels and title
     ax.set_xlabel('X-Axis')
     ax.set_ylabel('Y-Axis')
-    ax.set_title('Triangles and Points Overlay')
+    ax.set_title(title)
 
     # Show the plot
     plt.show()
+
+def GetMidwayFace(pts1, pts2):
+    """
+    Returns the average of two sets of points.
+    Assumes pts1 and pts2 are NumPy arrays.
+    """
+    midway_pts = np.zeros_like(pts1)
+    for i in range(len(midway_pts)):
+        mean_point = [pts1[i][0] + pts2[i][0], pts1[i][1] + pts2[i][1]]
+        mean_point = [mean_point[0]//2, mean_point[1]//2]
+        midway_pts[i] = mean_point
+    return midway_pts
+
+def ComputeAffine(pts1, pts2):
+    """
+    Returns the affine transformation matrix that transforms triangle1 into triangle2.
+    Assumes pts1 and pts2 are NumPy arrays that contain the same number of arrays of points
+        that represent the vertices of triangles for face1 and face2. Also, it is assumed
+        that the triangles at the same index of pts1 and pts2 have the same "meaning" in both
+        images/faces. I.e. both correspond to the same feature of the face.
+    """
+    # Main idea: Take two edges of each triangle (coming from the same point), to form a basis.
+    #   Warning: Make sure all vectors start from the same corresponding point.
+    # First, find the transform matrix that changes the basis of triangle 1 to a unit right triangle.
+    # Second, find the transform matrix that changes the basis of the unit right triangle to the basis of triangle 2.
+    # Thrid, multiply these two transformation matrices together (order matters) to get the full affine transformation.
+    # Lastly, don't neglect the offset from the corresponding "origin" points. Calculate this and add it to the transformation.
+    #   Hint: To add a translation to a transformation matrix (for a 2D poitn) we need to use a 3x3 homogenous coordinate representation.
+    pass
