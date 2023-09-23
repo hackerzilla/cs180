@@ -98,29 +98,54 @@ def GetMidwayFace(pts1, pts2):
 
 def ComputeAffine(tri1, tri2):
     """
-    Returns the affine transformation matrix that transforms triangle1 into triangle2.
     Assumes pts1 and pts2 are NumPy arrays that contain 3 points (tuples like (x,y)) 
         that represent the vertices of triangles for face1 and face2. Also, it is assumed
         that the triangles at the same index of pts1 and pts2 have the same "meaning" in both
         images/faces. I.e. both correspond to the same feature of the face.
-    """
-    """
-        Main idea: 
-    1. Take the two vectors that come from point A to points B and C as a basis that represents the space of the triangle1.
-    2. Find the transformation matrix that converts a vector in triangle 1 space to the standard basis. Call this T.
-        (This will be the inverse of the basis matrix)
-    3. Take the two vectors that come from point A' to points B' and C' as a basis that represents the space of triangle2.
-    4. Find the transformation matrix that converts a vector in the standard basis to the triangle 2 space.Call this T'.
-        (This should just be the basis matrix for triangle2)
-    5. Multiply T T' to get a 2x2 transformation matrix that goes from Triangle 1 space to Triangle 2 space. Call this matrix A.
-    6. Convert A to a homogenous coordinate system transformation matrix. 
-        i.e. put A in the top left corner of a 3x3 mzero-matrix.
-    7. Calculate the offset from point A to point A'. 
-    8. Add this offset as a trnslation to A-homogenous. Don't forget to set the bottom right element to 1.
-    9. Done!
 
-    This algorithm assumes that point A and point A' are correpsndences of one another, and the same for B, B' and C, C'.
+    Assumes that point A and point A' are correpsndences of one another, and the same for B, B' and C, C'.
+    
+    Returns the transformation matrix from tri1->tri2.
+    Assumes that tri1 and 2 are Np arrays where each point is a row,
+        and the points are represented in homogenous coordinates.
     """
-    # Get Triangle 1 basis vectors and put them into a matrix
-    T1 = np.vstack((tri1.T,[1, 1, 1]))
-    print(T1)
+    # Solve the system of linear equation that maps triangle 1 to triangle 2
+    A = np.vstack(tri1.T)
+    B = np.vstack(tri2.T) 
+
+    # Need to get the pseudo-inverse because normal inverse is too strict.
+    A_pseudo_inv = np.linalg.pinv(A)
+
+    # Calculate the transformation matrix T
+    T = B @ A_pseudo_inv
+
+    # Remove projective component; turn into affine transformation.
+    T[2][0] = 0
+    T[2][1] = 0
+    T[2][2] = 1
+
+    return T 
+
+def ConvertPointsToHomogenous(points):
+    """
+    Takes a list of points, assumed to be a NumPy array. 
+        Each point is a vector of size 2.
+    Returns the same list of points, but as homogenous coordinates.
+        Each homogenous point is a vector of size 3, where the 3rd entry is w=1.
+    """
+    # Append a column of ones to the array
+    homogeneous_points = np.column_stack((points, np.ones(points.shape[0])))
+    
+    return homogeneous_points
+
+def ConvertTrianglesToHomogenous(triangles):
+    """
+    Takes a list of triangles, each of which is a list of points.
+        Assumes that the points aren't homogenous, and that everything is a NumPy array.
+    Returns the same list of triangles, with all points replaced by homogenous versions.
+    """
+    for tri in range(triangles.shape[0]):
+        triangles[tri] = ConvertPointsToHomogenous(triangles[tri])
+    
+    return triangles
+     
