@@ -96,7 +96,7 @@ def GetMidwayFace(pts1, pts2):
         midway_pts[i] = mean_point
     return midway_pts
 
-def ComputeAffine(pts1, pts2):
+def ComputeAffine(tri1, tri2):
     """
     Returns the affine transformation matrix that transforms triangle1 into triangle2.
     Assumes pts1 and pts2 are NumPy arrays that contain 3 points (tuples like (x,y)) 
@@ -121,4 +121,6 @@ def ComputeAffine(pts1, pts2):
 
     This algorithm assumes that point A and point A' are correpsndences of one another, and the same for B, B' and C, C'.
     """
-    pass
+    # Get Triangle 1 basis vectors and put them into a matrix
+    T1 = np.vstack((tri1.T,[1, 1, 1]))
+    print(T1)
