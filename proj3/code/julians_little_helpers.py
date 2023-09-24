@@ -110,8 +110,8 @@ def ComputeAffine(tri1, tri2):
         and the points are represented in homogenous coordinates.
     """
     # Solve the system of linear equation that maps triangle 1 to triangle 2
-    A = np.vstack(tri1.T)
-    B = np.vstack(tri2.T) 
+    A = tri1.T
+    B = tri2.T 
 
     # Need to get the pseudo-inverse because normal inverse is too strict.
     A_pseudo_inv = np.linalg.pinv(A)
