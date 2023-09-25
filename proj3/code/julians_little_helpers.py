@@ -148,4 +148,4 @@ def ConvertTrianglesToHomogenous(triangles):
         triangles[tri] = ConvertPointsToHomogenous(triangles[tri])
     
     return triangles
-     
+
