@@ -117,6 +117,7 @@ def ComputeAffine(tri1, tri2):
     A_pseudo_inv = np.linalg.pinv(A)
 
     # Calculate the transformation matrix T
+    # WHY DOES THIS WORK?
     T = B @ A_pseudo_inv
 
     # Remove projective component; turn into affine transformation.
