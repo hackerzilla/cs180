@@ -37,6 +37,32 @@ def Display2Images(im1, im2, name1, name2, size):
     # Show the figure
     plt.show()
 
+def Display3Images(im1, im2, im3, name1, name2, name3, size):
+    # Set the desired width and height for the figure
+    fig_width = 2 * size# Width in inches
+    fig_height = size # Height in inches
+
+    # Create a figure with three subplots and set the figsize
+    fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(fig_width, fig_height))
+
+    # Display image1 in the first subplot
+    ax1.imshow(im1)
+    ax1.set_title(name1)
+
+    # Display image2 in the second subplot
+    ax2.imshow(im2)
+    ax2.set_title(name2)
+
+    # Display image3 in the third subplot
+    ax3.imshow(im3)
+    ax3.set_title(name3)
+
+    # Adjust spacing between subplots (optional)
+    plt.tight_layout()
+
+    # Show the figure
+    plt.show()
+
 def GetPointsFromJSON(json_file_path):
     try:
         # Read the JSON file
@@ -58,6 +84,16 @@ def GetTriangulationObject(pts):
     Assumes pts is a NumPy array.
     """
     tris = Delaunay(pts).simplices
+    triangulation = mtri.Triangulation(pts[:, 0], pts[:, 1], tris) 
+    return triangulation
+
+def GetTriangulationObjectFromExistingDelaunay(pts, delaunay):
+    """
+    Returns a maplotlib triangulation object. 
+    Assumes pts is a NumPy array.
+    Assumes scipy Delaunay triangulation object.
+    """
+    tris = delaunay.simplices
     triangulation = mtri.Triangulation(pts[:, 0], pts[:, 1], tris) 
     return triangulation
 
