@@ -95,6 +95,7 @@ def GetTriangulationObjectFromExistingDelaunay(pts, delaunay):
     """
     tris = delaunay.simplices
     triangulation = mtri.Triangulation(pts[:, 0], pts[:, 1], tris) 
+    # Can you explain why the previous line works? Specifically the array slicing. 
     return triangulation
 
 def DisplayFaceTrisAndPts(face_im, tris, pts, title):
