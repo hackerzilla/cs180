@@ -111,7 +111,7 @@ def DisplayFaceTrisAndPts(face_im, tris, pts, title):
     ax.triplot(tris, 'go--', alpha=0.5)
 
     # Plot the original points
-    ax.plot(pts[:, 0], pts[:, 1], 'ro')
+    ax.plot(pts[:, 1], pts[:, 0], 'ro')
 
     # Add labels and title
     ax.set_xlabel('X-Axis')
