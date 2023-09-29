@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import matplotlib.tri as mtri
 from skimage.draw import polygon2mask
+from skimage.draw import polygon
 from scipy.interpolate import RegularGridInterpolator
 import json
 
@@ -216,11 +217,14 @@ def warp(im, im_pts, target_pts, tri):
     for i in range(len(tri.simplices)):
         triangle_simplex = tri.simplices[i]
         # Get the corresponding triangle shape from george's face.
-        target_tri_mask = polygon2mask(im.shape[:2], target_pts[triangle_simplex])
-        target_tri_masks.append(target_tri_mask)
+        # TODO: Replace this with a call to polygon(triangle) which returns the pixels in the triangle.
+        # Then just do the inverse warp for that array and set those pixels in the result image to the interpolation of the inverse coordinates. 
+        #target_tri_mask = polygon2mask(im.shape[:2], target_pts[triangle_simplex])
+        #target_tri_masks.append(target_tri_mask)
         # Compute transformation from one of my triangles to the corresponding triangle in george's face.
         im_tri = im_pts[triangle_simplex]
         target_tri = target_pts[triangle_simplex]
+        target_tri_coords = polygon()
         # Convert triangle points to homogenous coordinates.
         im_tri_h = ConvertPointsToHomogenous(im_tri)
         target_tri_h = ConvertPointsToHomogenous(target_tri)
@@ -260,6 +264,13 @@ def warp(im, im_pts, target_pts, tri):
     im_transformed[:, :, 2] /= mask_weights
     return im_transformed
 
+def cross_dissolve(im1, im2, frac):
+    """
+    Compute the weighted average of two images by amount frac.
+    res = (1-frac)*im1 + frac*im2
+    """
+    return (1-frac)*im1 + frac*im2
+
 def morph(im1, im2, im1_pts, im2_pts, tri, warp_frac, dissolve_frac):
     """
     Inputs:
@@ -281,8 +292,10 @@ def morph(im1, im2, im1_pts, im2_pts, tri, warp_frac, dissolve_frac):
     im1_warp = warp(im1, im1_pts, intermediate_pts, tri) 
     im2_warp = warp(im2, im2_pts, intermediate_pts, tri) 
 
+    # Check the data types of the images
+
     # 2. Cross-dissolve the two warped images using dissolve_frac.
     #   Note: Cross-dissolve means that at dissolve_frac=0, the output is only im1, and at dissolve_frac=1, the output is only im2.
-
-
-    pass
+    result = cross_dissolve(im1_warp, im2_warp, dissolve_frac)
+    # Check the data type
+    return result
