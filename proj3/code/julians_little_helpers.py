@@ -187,3 +187,21 @@ def ConvertTrianglesToHomogenous(triangles):
     
     return triangles
 
+def morph(im1, im2, im1_pts, im2_pts, tri, warp_frac, dissolve_frac):
+    """
+    Inputs:
+        im1, im2: Images of the same size to be morphed together.
+        im1_pts, im2_pts: Corresponding points in each image. 
+            They should be NumPy arrays of shape (N, 2).
+        tri: Triangulation object returned by scipy.spatial.Delaunay(). 
+        warp_frac: Fraction of "warping" to apply to im1_pts and im2_pts. Lies in range [0, 1] for interpolation.
+        dissolve_frac: Fraction of cross-dissolve to apply to image. Lies in range [0, 1] for interpolation.
+    Returns:
+        Intermediate image morphed from im1 and im2 by fractional ammounts warp_frac and dissolve_frac.
+    """
+    # 1. Warp im1 and im2 to the shape of tri using im1_pts and im2_pts and by ammount warp_frac.
+    #    Note: Warp im1 by amount (1-warp_frac) and im2 by amount warp_frac. I.e. at warp_frac=0 the output is im1, and at warp_frac=1 the output is im2.
+
+    # 2. Cross-dissolve the two warped images using dissolve_frac.
+    #   Note: Cross-dissolve means that at dissolve_frac=0, the output is only im1, and at dissolve_frac=1, the output is only im2.
+    pass
