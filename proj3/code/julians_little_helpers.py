@@ -190,11 +190,7 @@ def ConvertTrianglesToHomogenous(triangles):
     
     return triangles
 
-def warp(im, im_pts, target_pts, tri):
-    """
-    Does the image warping from im to a target shape.
-    tri should be a scipy Delaunay triangulation object.
-    """
+def get_interpolator(im):
     x_dim = np.arange(0, im.shape[1])
     y_dim = np.arange(0, im.shape[0])
 
@@ -210,59 +206,46 @@ def warp(im, im_pts, target_pts, tri):
 
     def interpolate_rgb_h(homogenous):
         return interpolate_rgb((homogenous[0], homogenous[1]))
+    
+    return interpolate_rgb_h
 
-    transformed_tris = []
-    target_tri_masks = []
+def warp(im, im_pts, target_pts, tri, interpolate_rgb_h):
+    """
+    Does the image warping from im to a target shape.
+    tri should be a scipy Delaunay triangulation object.
+    """
+    transformed_im = np.zeros_like(im)
     # For all triangles in the triangulation:
     for i in range(len(tri.simplices)):
         triangle_simplex = tri.simplices[i]
         # Get the corresponding triangle shape from george's face.
         # TODO: Replace this with a call to polygon(triangle) which returns the pixels in the triangle.
         # Then just do the inverse warp for that array and set those pixels in the result image to the interpolation of the inverse coordinates. 
-        #target_tri_mask = polygon2mask(im.shape[:2], target_pts[triangle_simplex])
-        #target_tri_masks.append(target_tri_mask)
         # Compute transformation from one of my triangles to the corresponding triangle in george's face.
         im_tri = im_pts[triangle_simplex]
         target_tri = target_pts[triangle_simplex]
-        target_tri_coords = polygon()
+        target_tri_coords = polygon(target_tri[:, 0], target_tri[:, 1])
         # Convert triangle points to homogenous coordinates.
         im_tri_h = ConvertPointsToHomogenous(im_tri)
         target_tri_h = ConvertPointsToHomogenous(target_tri)
-
         # Compute affine transfromation matrix from my triangle to george's triangle.
         T = ComputeAffine(im_tri_h, target_tri_h)
         # Get the inverse of the transformation matrix.
         T_inv = np.linalg.inv(T)
+        for i in range(len(target_tri_coords[0])):
+            # Get the pixel coordinates of the target triangle.
+            y = target_tri_coords[0][i]
+            x = target_tri_coords[1][i]
+            # Compute the homogenous coordinates of the target triangle pixel.
+            target_tri_coord_h = np.array([y, x, 1])
+            # Compute the homogenous coordinates of the corresponding pixel in my triangle.
+            inverse_coord_h = T_inv @ target_tri_coord_h
+            # Interpolate the RGB values of the corresponding pixel in my triangle.
+            rgb = interpolate_rgb_h(inverse_coord_h)
+            # Set the pixel in the transformed image to the interpolated value.
+            transformed_im[y, x, :] = rgb
 
-        # Initialize transformed image to zeros.
-        transformed_tri = np.zeros_like(im)
-        # For every pixel coordinate position that is True in the mask of the transformed image (g_mask1)
-        for y in range(target_tri_mask.shape[0]):
-            for x in range(target_tri_mask.shape[1]):
-                if target_tri_mask[y][x]:
-                    # Get inverse coord
-                    coord = np.array([y, x, 1])
-                    inverse_coord = T_inv @ coord
-                    # Interpolate the value of the pixel at the inverse_coord.
-                    pixel_value = interpolate_rgb_h(inverse_coord)
-                    # set this coord to px value of inverse_coord
-                    transformed_tri[y][x] = pixel_value                 
-        transformed_tris.append(transformed_tri)
-
-    im_transformed = np.zeros_like(im)
-    for tri_im in transformed_tris:
-        im_transformed += tri_im
-
-    # Add up the masks
-    mask_weights = np.zeros_like(target_tri_masks[0])
-    for mask in target_tri_masks:
-        mask_weights += mask
-    mask_weights[mask_weights < 1] = 1
-    # Divide the result image by the mask weights (overlapping masks)
-    im_transformed[:, :, 0] /= mask_weights
-    im_transformed[:, :, 1] /= mask_weights
-    im_transformed[:, :, 2] /= mask_weights
-    return im_transformed
+    return transformed_im 
 
 def cross_dissolve(im1, im2, frac):
     """
@@ -288,11 +271,10 @@ def morph(im1, im2, im1_pts, im2_pts, tri, warp_frac, dissolve_frac):
     # 1. Warp im1 and im2 to the shape of tri using the weighted average im1_pts and im2_pts by ammount warp_frac.
     # Take the weighted average of the correspondance points 
     intermediate_pts = (1-warp_frac)*im1_pts + warp_frac*im2_pts
+    # Make the interpolators
     # Warp the images to the intermediate points 
-    im1_warp = warp(im1, im1_pts, intermediate_pts, tri) 
-    im2_warp = warp(im2, im2_pts, intermediate_pts, tri) 
-
-    # Check the data types of the images
+    im1_warp = warp(im1, im1_pts, intermediate_pts, tri, get_interpolator(im1)) 
+    im2_warp = warp(im2, im2_pts, intermediate_pts, tri, get_interpolator(im2)) 
 
     # 2. Cross-dissolve the two warped images using dissolve_frac.
     #   Note: Cross-dissolve means that at dissolve_frac=0, the output is only im1, and at dissolve_frac=1, the output is only im2.
