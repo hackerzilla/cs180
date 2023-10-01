@@ -218,32 +218,34 @@ def warp(im, im_pts, target_pts, tri, interpolate_rgb_h):
     # For all triangles in the triangulation:
     for i in range(len(tri.simplices)):
         triangle_simplex = tri.simplices[i]
-        # Get the corresponding triangle shape from george's face.
-        # TODO: Replace this with a call to polygon(triangle) which returns the pixels in the triangle.
-        # Then just do the inverse warp for that array and set those pixels in the result image to the interpolation of the inverse coordinates. 
-        # Compute transformation from one of my triangles to the corresponding triangle in george's face.
+        # Get the corresponding triangles.
         im_tri = im_pts[triangle_simplex]
         target_tri = target_pts[triangle_simplex]
-        target_tri_coords = polygon(target_tri[:, 0], target_tri[:, 1])
+        target_tri_pixels = polygon(target_tri[:, 0], target_tri[:, 1])
         # Convert triangle points to homogenous coordinates.
         im_tri_h = ConvertPointsToHomogenous(im_tri)
         target_tri_h = ConvertPointsToHomogenous(target_tri)
-        # Compute affine transfromation matrix from my triangle to george's triangle.
-        T = ComputeAffine(im_tri_h, target_tri_h)
-        # Get the inverse of the transformation matrix.
-        T_inv = np.linalg.inv(T)
-        for i in range(len(target_tri_coords[0])):
-            # Get the pixel coordinates of the target triangle.
-            y = target_tri_coords[0][i]
-            x = target_tri_coords[1][i]
-            # Compute the homogenous coordinates of the target triangle pixel.
-            target_tri_coord_h = np.array([y, x, 1])
-            # Compute the homogenous coordinates of the corresponding pixel in my triangle.
-            inverse_coord_h = T_inv @ target_tri_coord_h
+        # Compute affine transfromation matrix from the target triangle to the triangle in the original. 
+        T = ComputeAffine(target_tri_h, im_tri_h)
+        # TODO: Vectorize the pixel loop.
+        # Setup the pixels array as 2xN array of points
+        target_tri_pixels = np.array(target_tri_pixels)
+        # Append a row of all ones to the array.
+        target_tri_pixels = np.vstack((target_tri_pixels, np.ones(target_tri_pixels.shape[1])))
+        # Compute the inverse transformation of the pixel array, elementwise.
+        inverse_tri_pixels = T @ target_tri_pixels # Not sure if this sytax is correct
+        # TODO: Test this so far
+        for i in range(len(inverse_tri_pixels[0])):
+            # Get the i-th pixel in the triangle.
+            inverse_coord_h = inverse_tri_pixels[:, i]
             # Interpolate the RGB values of the corresponding pixel in my triangle.
             rgb = interpolate_rgb_h(inverse_coord_h)
+            # Get the target pixel in the result image.
+            target_coord = target_tri_pixels[:, i].astype(int)
+            # Convert to cartesian coordinates.
+            target_coord = target_coord[:2]
             # Set the pixel in the transformed image to the interpolated value.
-            transformed_im[y, x, :] = rgb
+            transformed_im[target_coord[0], target_coord[1]] = rgb
 
     return transformed_im 
 
