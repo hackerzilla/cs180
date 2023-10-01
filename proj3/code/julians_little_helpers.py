@@ -202,14 +202,14 @@ def get_interpolator(im):
         r = r_interpolator(yx_coord)
         g = g_interpolator(yx_coord)
         b = b_interpolator(yx_coord)
-        return np.array((r, g, b)).reshape(1,3)
+        return np.column_stack((r, g, b))
 
     def interpolate_rgb_h(homogenous):
         return interpolate_rgb((homogenous[0], homogenous[1]))
     
-    return interpolate_rgb_h
+    return interpolate_rgb
 
-def warp(im, im_pts, target_pts, tri, interpolate_rgb_h):
+def warp(im, im_pts, target_pts, tri, interpolate_rgb):
     """
     Does the image warping from im to a target shape.
     tri should be a scipy Delaunay triangulation object.
@@ -230,22 +230,22 @@ def warp(im, im_pts, target_pts, tri, interpolate_rgb_h):
         # TODO: Vectorize the pixel loop.
         # Setup the pixels array as 2xN array of points
         target_tri_pixels = np.array(target_tri_pixels)
-        # Append a row of all ones to the array.
+        # Append a row of all ones to the array to turn into homogeneous coordinates.
         target_tri_pixels = np.vstack((target_tri_pixels, np.ones(target_tri_pixels.shape[1])))
         # Compute the inverse transformation of the pixel array, elementwise.
         inverse_tri_pixels = T @ target_tri_pixels # Not sure if this sytax is correct
-        # TODO: Test this so far
-        for i in range(len(inverse_tri_pixels[0])):
-            # Get the i-th pixel in the triangle.
-            inverse_coord_h = inverse_tri_pixels[:, i]
-            # Interpolate the RGB values of the corresponding pixel in my triangle.
-            rgb = interpolate_rgb_h(inverse_coord_h)
-            # Get the target pixel in the result image.
-            target_coord = target_tri_pixels[:, i].astype(int)
-            # Convert to cartesian coordinates.
-            target_coord = target_coord[:2]
-            # Set the pixel in the transformed image to the interpolated value.
-            transformed_im[target_coord[0], target_coord[1]] = rgb
+        # Cut off the last row of the inverse pixels array to turn into cartesian coordinates.
+        inverse_tri_pixels = inverse_tri_pixels[:2, :]
+        # Put the inverse coordinates into a format that RegularGridInterpolator can use.
+        float_points = inverse_tri_pixels.T
+        # Make a new array that contains the interpolated RGB values from the original image of the inverse pixels
+        interpolated_rgb = interpolate_rgb(float_points)
+        # Set the pixels in the transformed image to the interpolated values.
+        target_tri_pixels = target_tri_pixels.astype(int)
+        # Remove hmogenous coordinate
+        target_tri_pixels = target_tri_pixels[:2, :]
+        target_tri_pixels = target_tri_pixels.T
+        transformed_im[target_tri_pixels[:, 0], target_tri_pixels[:, 1]] = interpolated_rgb
 
     return transformed_im 
 
