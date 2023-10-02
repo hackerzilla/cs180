@@ -209,11 +209,12 @@ def get_interpolator(im):
     
     return interpolate_rgb
 
-def warp(im, im_pts, target_pts, tri, interpolate_rgb):
+def warp(im, im_pts, target_pts, tri):
     """
     Does the image warping from im to a target shape.
     tri should be a scipy Delaunay triangulation object.
     """
+    interpolate_rgb = get_interpolator(im)
     transformed_im = np.zeros_like(im)
     # For all triangles in the triangulation:
     for i in range(len(tri.simplices)):
@@ -245,6 +246,9 @@ def warp(im, im_pts, target_pts, tri, interpolate_rgb):
         # Remove hmogenous coordinate
         target_tri_pixels = target_tri_pixels[:2, :]
         target_tri_pixels = target_tri_pixels.T
+        # Clip the target pixels arrray to the size of the image.
+        target_tri_pixels[:, 0] = np.clip(target_tri_pixels[:, 0], 0, im.shape[0]-1)
+        target_tri_pixels[:, 1] = np.clip(target_tri_pixels[:, 1], 0, im.shape[1]-1)
         transformed_im[target_tri_pixels[:, 0], target_tri_pixels[:, 1]] = interpolated_rgb
 
     return transformed_im 
@@ -275,8 +279,8 @@ def morph(im1, im2, im1_pts, im2_pts, tri, warp_frac, dissolve_frac):
     intermediate_pts = (1-warp_frac)*im1_pts + warp_frac*im2_pts
     # Make the interpolators
     # Warp the images to the intermediate points 
-    im1_warp = warp(im1, im1_pts, intermediate_pts, tri, get_interpolator(im1)) 
-    im2_warp = warp(im2, im2_pts, intermediate_pts, tri, get_interpolator(im2)) 
+    im1_warp = warp(im1, im1_pts, intermediate_pts, tri) 
+    im2_warp = warp(im2, im2_pts, intermediate_pts, tri) 
 
     # 2. Cross-dissolve the two warped images using dissolve_frac.
     #   Note: Cross-dissolve means that at dissolve_frac=0, the output is only im1, and at dissolve_frac=1, the output is only im2.
