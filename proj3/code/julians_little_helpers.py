@@ -7,6 +7,7 @@ import matplotlib.image as mpimg
 import matplotlib.tri as mtri
 from skimage.draw import polygon2mask
 from skimage.draw import polygon
+from skimage.transform import resize
 from scipy.interpolate import RegularGridInterpolator
 import json
 
@@ -87,7 +88,8 @@ def GetTriangulationObject(pts):
     Assumes pts is a NumPy array.
     """
     tris = Delaunay(pts).simplices
-    triangulation = mtri.Triangulation(pts[:, 0], pts[:, 1], tris) 
+    # Matplot uses xy format
+    triangulation = mtri.Triangulation(pts[:, 1], pts[:, 0], tris) 
     return triangulation
 
 def GetTriangulationObjectFromExistingDelaunay(pts, delaunay):
@@ -97,7 +99,7 @@ def GetTriangulationObjectFromExistingDelaunay(pts, delaunay):
     Assumes scipy Delaunay triangulation object.
     """
     tris = delaunay.simplices
-    triangulation = mtri.Triangulation(pts[:, 0], pts[:, 1], tris) 
+    triangulation = mtri.Triangulation(pts[:, 1], pts[:, 0], tris) 
     # Can you explain why the previous line works? Specifically the array slicing. 
     return triangulation
 
@@ -209,13 +211,13 @@ def get_interpolator(im):
     
     return interpolate_rgb
 
-def warp(im, im_pts, target_pts, tri):
+def warp(im, im_pts, target_pts, target_shape, tri):
     """
     Does the image warping from im to a target shape.
     tri should be a scipy Delaunay triangulation object.
     """
     interpolate_rgb = get_interpolator(im)
-    transformed_im = np.zeros_like(im)
+    transformed_im = np.zeros(target_shape)
     # For all triangles in the triangulation:
     for i in range(len(tri.simplices)):
         triangle_simplex = tri.simplices[i]
@@ -228,7 +230,6 @@ def warp(im, im_pts, target_pts, tri):
         target_tri_h = ConvertPointsToHomogenous(target_tri)
         # Compute affine transfromation matrix from the target triangle to the triangle in the original. 
         T = ComputeAffine(target_tri_h, im_tri_h)
-        # TODO: Vectorize the pixel loop.
         # Setup the pixels array as 2xN array of points
         target_tri_pixels = np.array(target_tri_pixels)
         # Append a row of all ones to the array to turn into homogeneous coordinates.
@@ -246,9 +247,9 @@ def warp(im, im_pts, target_pts, tri):
         # Remove hmogenous coordinate
         target_tri_pixels = target_tri_pixels[:2, :]
         target_tri_pixels = target_tri_pixels.T
-        # Clip the target pixels arrray to the size of the image.
-        target_tri_pixels[:, 0] = np.clip(target_tri_pixels[:, 0], 0, im.shape[0]-1)
-        target_tri_pixels[:, 1] = np.clip(target_tri_pixels[:, 1], 0, im.shape[1]-1)
+        # Clamp the values to be within the image
+        target_tri_pixels[:, 0] = np.clip(target_tri_pixels[:, 0], 0, transformed_im.shape[0]-1)
+        target_tri_pixels[:, 1] = np.clip(target_tri_pixels[:, 1], 0, transformed_im.shape[1]-1)
         transformed_im[target_tri_pixels[:, 0], target_tri_pixels[:, 1]] = interpolated_rgb
 
     return transformed_im 
@@ -258,6 +259,12 @@ def cross_dissolve(im1, im2, frac):
     Compute the weighted average of two images by amount frac.
     res = (1-frac)*im1 + frac*im2
     """
+    # Resize the smaller image to be the same size as the larger image
+    if (im1.shape[0] * im1.shape[1]) < (im2.shape[0] * im2.shape[1]):
+        im2 = resize(im2, im1.shape)
+    else:
+        im1 = resize(im1, im2.shape)
+
     return (1-frac)*im1 + frac*im2
 
 def morph(im1, im2, im1_pts, im2_pts, tri, warp_frac, dissolve_frac):
@@ -279,8 +286,8 @@ def morph(im1, im2, im1_pts, im2_pts, tri, warp_frac, dissolve_frac):
     intermediate_pts = (1-warp_frac)*im1_pts + warp_frac*im2_pts
     # Make the interpolators
     # Warp the images to the intermediate points 
-    im1_warp = warp(im1, im1_pts, intermediate_pts, tri) 
-    im2_warp = warp(im2, im2_pts, intermediate_pts, tri) 
+    im1_warp = warp(im1, im1_pts, intermediate_pts, im2.shape, tri) 
+    im2_warp = warp(im2, im2_pts, intermediate_pts, im1.shape, tri) 
 
     # 2. Cross-dissolve the two warped images using dissolve_frac.
     #   Note: Cross-dissolve means that at dissolve_frac=0, the output is only im1, and at dissolve_frac=1, the output is only im2.
