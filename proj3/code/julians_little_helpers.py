@@ -244,7 +244,7 @@ def warp(im, im_pts, target_pts, target_shape, tri):
         interpolated_rgb = interpolate_rgb(float_points)
         # Set the pixels in the transformed image to the interpolated values.
         target_tri_pixels = target_tri_pixels.astype(int)
-        # Remove hmogenous coordinate
+        # Remove homogenous coordinate
         target_tri_pixels = target_tri_pixels[:2, :]
         target_tri_pixels = target_tri_pixels.T
         # Clamp the values to be within the image
