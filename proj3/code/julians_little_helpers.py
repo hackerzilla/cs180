@@ -123,6 +123,9 @@ def DisplayFaceTrisAndPts(face_im, tris, pts, title):
     ax.set_ylabel('Y-Axis')
     ax.set_title(title)
 
+    # Save the plot
+    #plt.savefig(f"{title}.jpg")
+
     # Show the plot
     plt.show()
 
@@ -264,7 +267,6 @@ def cross_dissolve(im1, im2, frac):
         im2 = resize(im2, im1.shape)
     else:
         im1 = resize(im1, im2.shape)
-
     return (1-frac)*im1 + frac*im2
 
 def morph(im1, im2, im1_pts, im2_pts, tri, warp_frac, dissolve_frac):
