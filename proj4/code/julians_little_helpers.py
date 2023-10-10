@@ -322,3 +322,12 @@ def morph(im1, im2, im1_pts, im2_pts, tri, warp_frac, dissolve_frac):
     return result
 
 
+def ComputeH(im1_pts, im2_pts):
+    """
+    Computes the homography between two images by solving the system of n linear equations: Ah = b
+    Inputs: 
+        im1_pts and im2_pts are assumed to be NumPy arrays of shape (N, 2).
+    Returns:
+        H: The homography between the two images.
+    """
+    pass
