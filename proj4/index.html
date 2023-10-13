@@ -2,23 +2,77 @@
 
 <!DOCTYPE html>
 <html>
+    <style>
+        img {
+            max-width: 100%;
+            max-height: 50%;
+            align-self: center;
+        } 
+    </style>
     <head>
         <title>CS 180 Project 4a: Image Warping and Mosaics</title>
     </head>
     <body>
         <h1>CS 180 Project 4a: Image Warping and Mosaics</h1>
         <h2>Shoot the Pictures</h2>
-        <p>Section 2 content goes here.</p>
+        <p>
+            For my pictures I decided to use a tripod to take the pictures
+            on the roof of the astronomy building. I think they turned out prety 
+            well, except for the fact that I forgot to hold the exposure 
+            constant.
+        </p>
+        <img src="data/berk_night_1.png" alt="Image">
+        <img src="data/berk_night_2.png" alt="Image">
         <h2>Warping the Images</h2>
-        <p>Section 3 content goes here.</p>
+        <p>
+            Warping wasn't all that bad. It was similar to project 3's 
+            triangle warp, except that I had to warp the entire image.
+            It was a little tricky to figure out exactly how and where 
+            to place the pixels using inverse warping, but eventually 
+            I realized I could just use the skimage.draw.polygon() function
+            just like with triangle warping in project 3, but this time 
+            the polygon was the image warping to the other image.
+        <br>
+        <br>
+            Here's my warped image with some (excessive) padding:
+        </p>
+        <img src="results/berk_night_1_warped.png" alt="Image">
         <h2>Rectifcation</h2>
-        <p></p>
+        <p>
+            Didn't do this yet..
+        </p>
         <h2>Blending the Mosaic</h2>
-        <p></p>
+        <p>
+            For blending the images, I found that an average of the overlapping
+            region was sufficient for a good blend and laplacian stack blending
+            as we did in project 2 didn't actually improve it at all.
+            In addition, I experimented with using different correspondences
+            to make the homography matrix. No matter what I did, I couldn't get
+            that slight misalignment to go away. My hypothesis is that 
+            implementing MOPS and RANSAC in part B of project 4 will fix this.
+            <br>
+            <br>
+            Here's what the blended image looked like. As you can see, there's 
+            a slight misalignment problem. I believe RANSAC and MOPS will solve
+            this problem.
+        </p>
+        <img src="results/berk_night_1_and_2_blended.png" alt="Image"> 
         <h2>What I learned...</h2>
-        <p></p>
-        <h2>Images</h2>
-        <img src="image1.jpg" alt="Image">
-        <img src="image2.jpg" alt="Image">
+        <p>
+            I think the most important thing I've learned in this project is how easy it is to use 
+            least squares to compute homographies. 
+            It literally is as simple as doing the linear algebra and rearranging things slightly.
+            <br><br>
+            Also, this project really reinforced that writing clear code and thinking 
+            straightfordwarly about the data structures is especially important in 
+            these data heavy projects. This was also true in the previous ones, but 
+            this project integrated all that we learned in the previous ones and 
+            so keeping track of the arrays in your head was even more important.
+            <br><br>
+            Besides learning more about python/numpy data structures and linear algebra, I gained 
+            an appreciation for the simplicity yet high potential of homographies. There's a lot 
+            you can do with them, and I'm looking forward to using them for photogrammetry in the 
+            upcoming projects.
+        </p>
     </body>
 </html>
